@@ -23,19 +23,26 @@ import com.google.gson.common.MoreAsserts;
 import com.google.gson.common.TestTypes.BagOfPrimitives;
 import com.google.gson.common.TestTypes.ClassWithObjects;
 import com.google.gson.reflect.TypeToken;
-
 import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.experimental.theories.DataPoint;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+
 /**
  * Functional tests for Json serialization and deserialization of arrays.
  *
  * @author Inderjeet Singh
  * @author Joel Leitch
  */
+@RunWith(Theories.class)
 public class ArrayTest extends TestCase {
   private Gson gson;
 
@@ -45,15 +52,28 @@ public class ArrayTest extends TestCase {
     gson = new Gson();
   }
 
-  public void testTopLevelArrayOfIntsSerialization() {
-    int[] target = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-    assertEquals("[1,2,3,4,5,6,7,8,9]", gson.toJson(target));
+  @DataPoint
+  public static Gson theoryGson = new Gson();
+
+  @DataPoint
+  public static int[] inputTopLevelArrayOfInts = new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+  @DataPoint
+  public static String inputTopLevelArrayOfIntsString = "[1,2,3,4,5,6,7,8,9]";
+
+  @DataPoint
+  public static int[] inputEmptyArray = {};
+
+  @Theory
+  public void testTopLevelArrayOfIntsSerialization(final int[] inputTopLevelArrayOfInts) {
+    Assume.assumeNotNull(theoryGson, inputTopLevelArrayOfInts);
+    Assert.assertEquals(inputTopLevelArrayOfIntsString, theoryGson.toJson(inputTopLevelArrayOfInts));
   }
 
+  @Theory
   public void testTopLevelArrayOfIntsDeserialization() {
-    int[] expected = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    int[] actual = gson.fromJson("[1,2,3,4,5,6,7,8,9]", int[].class);
-    MoreAsserts.assertEquals(expected, actual);
+    Assume.assumeNotNull(theoryGson, inputTopLevelArrayOfInts);
+    Assert.assertArrayEquals(inputTopLevelArrayOfInts,theoryGson.fromJson(inputTopLevelArrayOfIntsString, int[].class));
   }
 
   public void testInvalidArrayDeserialization() {
@@ -65,9 +85,9 @@ public class ArrayTest extends TestCase {
     }
   }
 
+  @Theory
   public void testEmptyArraySerialization() {
-    int[] target = {};
-    assertEquals("[]", gson.toJson(target));
+    Assert.assertEquals("[]", theoryGson.toJson(inputEmptyArray));
   }
 
   public void testEmptyArrayDeserialization() {
