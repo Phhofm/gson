@@ -60,13 +60,15 @@ public class ArrayTest extends TestCase {
   @Theory
   public void testTopLevelArrayOfIntsSerialization() {
     Assume.assumeNotNull(theoryGson, inputTopLevelArrayOfInts);
-    Assert.assertEquals(inputTopLevelArrayOfIntsString, theoryGson.toJson(inputTopLevelArrayOfInts));
+    String target = theoryGson.toJson(inputTopLevelArrayOfInts);
+    Assert.assertEquals(inputTopLevelArrayOfIntsString, target);
   }
 
   @Theory
   public void testTopLevelArrayOfIntsDeserialization() {
     Assume.assumeNotNull(theoryGson, inputTopLevelArrayOfInts);
-    Assert.assertArrayEquals(inputTopLevelArrayOfInts,theoryGson.fromJson(inputTopLevelArrayOfIntsString, int[].class));
+    int[] target = theoryGson.fromJson(inputTopLevelArrayOfIntsString, int[].class);
+    Assert.assertArrayEquals(inputTopLevelArrayOfInts,target);
   }
 
   @Theory
@@ -109,14 +111,14 @@ public class ArrayTest extends TestCase {
   public void testNullsInArrayDeserialization() {
     String json = "[\"foo\",null,\"bar\"]";
     String[] expected = {"foo", null, "bar"};
-    String[] target = theoryGson.fromJson(json, expected.getClass());
+    String[] target = theoryGson.fromJson(json, String[].class);
     Assert.assertArrayEquals(expected, target);
   }
 
   @Theory
   public void testSingleNullInArraySerialization() {
     BagOfPrimitives[] array = new BagOfPrimitives[1];
-    array[0] = null;
+    //array[0] = null;
     String json = theoryGson.toJson(array);
     assertEquals("[null]", json);
   }
@@ -300,4 +302,69 @@ public class ArrayTest extends TestCase {
     assertEquals("[[\"test1\",\"test2\"],[\"test3\",\"test4\"]]",
         new Gson().toJson(stringArrays));
   }
+
+  @Theory
+  public void testJaggedArraySerialization(){
+    //declaring 2D array with odd columns
+    int[][] jaggedArray = new int[3][];
+    jaggedArray[0] = new int[3];
+    jaggedArray[1] = new int[4];
+    jaggedArray[2] = new int[2];
+    //initializing jagged array
+    int count = 0;
+    for (int i=0; i<jaggedArray.length; i++) {
+      for (int j = 0; j < jaggedArray[i].length; j++) {
+        jaggedArray[i][j] = count++;
+      }
+    }
+    String target = theoryGson.toJson(jaggedArray);
+    String expected = "[[0,1,2],[3,4,5,6],[7,8]]";
+    Assert.assertEquals(expected, target);
+  }
+
+  @Theory
+  public void testJaggedArrayDeserialization(){
+    String json = "[[0,1,2],[3,4,5,6],[7,8]]";
+    int[][] target = theoryGson.fromJson(json, int[][].class);
+    //declaring 2D array with odd columns
+    int[][] expected = new int[3][];
+    expected[0] = new int[3];
+    expected[1] = new int[4];
+    expected[2] = new int[2];
+    //initializing jagged array
+    int count = 0;
+    for (int i=0; i<expected.length; i++) {
+      for (int j = 0; j < expected[i].length; j++) {
+        expected[i][j] = count++;
+      }
+    }
+    Assert.assertEquals(expected, target);
+  }
+
+  @Theory
+  public void testIntHexValueSerialization(){
+    int hexVal = 0x1a;
+    String expected = "26";
+    String target = theoryGson.toJson(hexVal);
+    Assert.assertEquals(expected, target);
+  }
+
+  @Theory
+  public void testIntBinValueSerialization(){
+    int binVal = 0b11010;
+    String expected = "26";
+    String target = theoryGson.toJson(binVal);
+    Assert.assertEquals(expected, target);
+  }
+
+  @Theory
+  public void testUnderscoreCharsInNumericLiteralsSerialization(){
+    int underscore = 5___________2____________3;
+    System.out.println(underscore);
+    String target = theoryGson.toJson(underscore);
+    String expected = "523";
+    Assert.assertEquals(expected, target);
+  }
+
+
 }
