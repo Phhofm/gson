@@ -343,10 +343,21 @@ public class ArrayTest extends TestCase {
 
   @Theory
   public void testIntHexValueSerialization(){
-    int hexVal = 0x1a;
-    String expected = "26";
-    String target = theoryGson.toJson(hexVal);
+    int[] hexVals = {0x1a, 0x201};
+    String expected = "[26,513]";
+    String target = theoryGson.toJson(hexVals);
     Assert.assertEquals(expected, target);
+  }
+
+  @Theory
+  public void testIntHexValueDeserialization(){
+    //String json = "["1A", "6F"]";
+    //int[] expected = {26,111};
+    String json = "[0x1a, 0x201]";
+    //int[] expected = {26,513};
+    int[] expected = {0x1a, 0x201};
+    int[] target = theoryGson.fromJson(json, int[].class);
+    Assert.assertArrayEquals(expected, target);
   }
 
   @Theory
